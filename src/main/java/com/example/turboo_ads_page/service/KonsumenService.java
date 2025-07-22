@@ -32,8 +32,6 @@ public class KonsumenService {
             konsumen.setNotelpon(konsumenDetails.getNotelpon());
             konsumen.setFotoktp(konsumenDetails.getFotoktp());
             konsumen.setFotokk(konsumenDetails.getFotokk());
-            konsumen.setIdjaminan(konsumenDetails.getIdjaminan());
-            konsumen.setIdstatus(konsumenDetails.getIdstatus());
             return konsumenRepository.save(konsumen);
         }
         return null;

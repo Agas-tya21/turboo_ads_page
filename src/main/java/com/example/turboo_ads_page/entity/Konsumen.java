@@ -13,6 +13,4 @@ public class Konsumen {
     private String notelpon;
     private String fotoktp;
     private String fotokk;
-    private String idjaminan;
-    private String idstatus;
 }
