@@ -1,26 +1,25 @@
 package com.example.turboo_ads_page.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.turboo_ads_page.entity.Jaminanproduk;
 import com.example.turboo_ads_page.service.JaminanprodukService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/jaminan")
 public class JaminanprodukController {
+
     @Autowired
     private JaminanprodukService jaminanprodukService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GetMapping
     public List<Jaminanproduk> getAllJaminanproduk() {
@@ -37,13 +36,24 @@ public class JaminanprodukController {
     }
 
     @PostMapping
-    public Jaminanproduk createJaminanproduk(@RequestBody Jaminanproduk jaminanproduk) {
-        return jaminanprodukService.createJaminanproduk(jaminanproduk);
+    public Jaminanproduk createJaminanproduk(@RequestParam("jaminan") String jaminanJson,
+                                            @RequestParam(value = "fotojaminan", required = false) MultipartFile fotojaminan,
+                                            @RequestParam(value = "fotorekeninglistrik", required = false) MultipartFile fotorekeninglistrik,
+                                            @RequestParam(value = "fotoslipgaji", required = false) MultipartFile fotoslipgaji,
+                                            @RequestParam(value = "fotopelepasanaset", required = false) MultipartFile fotopelepasanaset) throws IOException {
+        Jaminanproduk jaminanproduk = objectMapper.readValue(jaminanJson, Jaminanproduk.class);
+        return jaminanprodukService.createJaminanproduk(jaminanproduk, fotojaminan, fotorekeninglistrik, fotoslipgaji, fotopelepasanaset);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Jaminanproduk> updateJaminanproduk(@PathVariable String id, @RequestBody Jaminanproduk jaminanprodukDetails) {
-        Jaminanproduk updatedJaminan = jaminanprodukService.updateJaminanproduk(id, jaminanprodukDetails);
+    public ResponseEntity<Jaminanproduk> updateJaminanproduk(@PathVariable String id,
+                                                            @RequestParam("jaminan") String jaminanJson,
+                                                            @RequestParam(value = "fotojaminan", required = false) MultipartFile fotojaminan,
+                                                            @RequestParam(value = "fotorekeninglistrik", required = false) MultipartFile fotorekeninglistrik,
+                                                            @RequestParam(value = "fotoslipgaji", required = false) MultipartFile fotoslipgaji,
+                                                            @RequestParam(value = "fotopelepasanaset", required = false) MultipartFile fotopelepasanaset) throws IOException {
+        Jaminanproduk jaminanprodukDetails = objectMapper.readValue(jaminanJson, Jaminanproduk.class);
+        Jaminanproduk updatedJaminan = jaminanprodukService.updateJaminanproduk(id, jaminanprodukDetails, fotojaminan, fotorekeninglistrik, fotoslipgaji, fotopelepasanaset);
         if (updatedJaminan == null) {
             return ResponseEntity.notFound().build();
         }

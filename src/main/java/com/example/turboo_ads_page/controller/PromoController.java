@@ -1,26 +1,25 @@
 package com.example.turboo_ads_page.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.turboo_ads_page.entity.Promo;
 import com.example.turboo_ads_page.service.PromoService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/promos")
 public class PromoController {
+
     @Autowired
     private PromoService promoService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GetMapping
     public List<Promo> getAllPromos() {
@@ -37,13 +36,15 @@ public class PromoController {
     }
 
     @PostMapping
-    public Promo createPromo(@RequestBody Promo promo) {
-        return promoService.createPromo(promo);
+    public Promo createPromo(@RequestParam("promo") String promoJson, @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+        Promo promo = objectMapper.readValue(promoJson, Promo.class);
+        return promoService.createPromo(promo, file);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Promo> updatePromo(@PathVariable String id, @RequestBody Promo promoDetails) {
-        Promo updatedPromo = promoService.updatePromo(id, promoDetails);
+    public ResponseEntity<Promo> updatePromo(@PathVariable String id, @RequestParam("promo") String promoJson, @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+        Promo promoDetails = objectMapper.readValue(promoJson, Promo.class);
+        Promo updatedPromo = promoService.updatePromo(id, promoDetails, file);
         if (updatedPromo == null) {
             return ResponseEntity.notFound().build();
         }
