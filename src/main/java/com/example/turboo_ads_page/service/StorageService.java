@@ -1,9 +1,5 @@
 package com.example.turboo_ads_page.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,52 +7,46 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 @Service
 public class StorageService {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final Path fileStorageLocation;
 
-    private Path rootLocation;
-
-    // Inisialisasi folder upload
-    public void init() {
+    // @Autowired dihapus dari sini karena tidak diperlukan
+    public StorageService(@Value("${file.upload-dir}") String uploadDir) {
+        this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
         try {
-            rootLocation = Paths.get(uploadDir);
-            Files.createDirectories(rootLocation);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not initialize storage location", e);
+            Files.createDirectories(this.fileStorageLocation);
+        } catch (Exception ex) {
+            throw new RuntimeException("Could not create the directory where the uploaded files will be stored.", ex);
         }
     }
 
-    // Fungsi untuk menyimpan file
-    public String store(MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new RuntimeException("Failed to store empty file.");
-        }
-        
-        // Buat nama file yang unik untuk menghindari duplikasi
-        String originalFilename = file.getOriginalFilename();
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
-        String newFilename = UUID.randomUUID().toString() + extension;
+    public String storeFile(MultipartFile file) {
+        String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
 
         try {
-            Path destinationFile = this.rootLocation.resolve(Paths.get(newFilename))
-                    .normalize().toAbsolutePath();
-
-            if (!destinationFile.getParent().equals(this.rootLocation.toAbsolutePath())) {
-                // Security check
-                throw new RuntimeException("Cannot store file outside current directory.");
+            if (originalFileName.contains("..")) {
+                throw new RuntimeException("Sorry! Filename contains invalid path sequence " + originalFileName);
             }
-            
-            Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
-            
-            return newFilename; // Kembalikan nama file baru untuk disimpan di database
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to store file.", e);
+
+            String fileExtension = "";
+            if (originalFileName.contains(".")) {
+                fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+            }
+            String newFileName = UUID.randomUUID().toString() + fileExtension;
+
+            Path targetLocation = this.fileStorageLocation.resolve(newFileName);
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+            return newFileName;
+        } catch (IOException ex) {
+            throw new RuntimeException("Could not store file " + originalFileName + ". Please try again!", ex);
         }
     }
 }
