@@ -13,7 +13,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**") // Menerapkan CORS pada semua endpoint di bawah /api/
-                .allowedOrigins("http://192.168.1.14:3000") // Mengizinkan semua domain. Ganti dengan domain frontend Anda untuk produksi.
+                .allowedOrigins("http://192.168.1.14:3000", "http://192.168.215.192:3000") // Mengizinkan semua domain. Ganti dengan domain frontend Anda untuk produksi.
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Metode HTTP yang diizinkan
                 .allowedHeaders("*") // Mengizinkan semua header
                 .allowCredentials(false);
