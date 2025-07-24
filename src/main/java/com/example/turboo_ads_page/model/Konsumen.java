@@ -12,7 +12,7 @@ public class Konsumen {
     @Column(name = "idkonsumen")
     private String idkonsumen;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String nik;
 
     @Column(name = "namalengkap")
@@ -20,16 +20,7 @@ public class Konsumen {
 
     @Column(name = "notelpon")
     private String notelpon;
-
-    // Kolom untuk menyimpan nama file gambar
-    private String fotoktp;
-    private String fotokk;
-    private String fotojaminan;
-    private String fotorekeninglistrik;
-    private String fotoslipgaji;
-    private String fotopelepasanaset;
-
-    // Relasi (diasumsikan sudah ada modelnya)
+    
     @ManyToOne
     @JoinColumn(name = "idproduk")
     private Produk produk;
@@ -38,8 +29,11 @@ public class Konsumen {
     @JoinColumn(name = "idpromo")
     private Promo promo;
 
-    // Diasumsikan ada model Status
-    // @ManyToOne
-    // @JoinColumn(name = "idstatus")
-    // private Status status;
+    @ManyToOne
+    @JoinColumn(name = "idjaminan")
+    private JenisJaminan jenisJaminan;
+
+    @ManyToOne
+    @JoinColumn(name = "idstatus")
+    private Status status;
 }

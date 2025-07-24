@@ -1,12 +1,14 @@
 package com.example.turboo_ads_page.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.util.List;
 
 @Entity
 @Table(name = "produk")
@@ -22,11 +24,16 @@ public class Produk {
     @Column(name = "namaproduk")
     private String namaproduk;
 
-    // kelasproduk DIHAPUS
-
     @Column(name = "keteranganproduk", columnDefinition = "TEXT")
     private String keteranganproduk;
 
     @Column(name = "gambarproduk")
     private String gambarproduk;
+
+    // --- BIDANG BARU DITAMBAHKAN DI SINI ---
+    @OneToMany(mappedBy = "produk", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<JenisJaminan> jenisJaminans;
 }
