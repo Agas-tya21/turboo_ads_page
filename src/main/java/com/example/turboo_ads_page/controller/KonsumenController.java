@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 @RestController
@@ -26,25 +25,34 @@ public class KonsumenController {
     @Autowired
     private ObjectMapper objectMapper;
 
+    // --- PERUBAHAN UTAMA DI SINI ---
+    // Menerima setiap file sebagai @RequestPart yang terpisah, bukan sebagai Map
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<Konsumen> createKonsumen(
             @RequestPart("konsumen") String konsumenJson,
-            @RequestPart(value = "files", required = false) Map<String, MultipartFile> files) {
+            @RequestPart(value = "fotoktp", required = false) MultipartFile fotoktp,
+            @RequestPart(value = "fotokk", required = false) MultipartFile fotokk,
+            @RequestPart(value = "fotojaminan", required = false) MultipartFile fotojaminan,
+            @RequestPart(value = "fotorekeninglistrik", required = false) MultipartFile fotorekeninglistrik,
+            @RequestPart(value = "fotoslipgaji", required = false) MultipartFile fotoslipgaji,
+            @RequestPart(value = "fotopelepasanaset", required = false) MultipartFile fotopelepasanaset) {
         try {
             Konsumen konsumen = objectMapper.readValue(konsumenJson, Konsumen.class);
 
-            if (files != null) {
-                updateFile(konsumen::setFotoktp, files.get("fotoktp"));
-                updateFile(konsumen::setFotokk, files.get("fotokk"));
-                updateFile(konsumen::setFotojaminan, files.get("fotojaminan"));
-                updateFile(konsumen::setFotorekeninglistrik, files.get("fotorekeninglistrik"));
-                updateFile(konsumen::setFotoslipgaji, files.get("fotoslipgaji"));
-                updateFile(konsumen::setFotopelepasanaset, files.get("fotopelepasanaset"));
-            }
+            // Simpan setiap file jika ada
+            updateFile(konsumen::setFotoktp, fotoktp);
+            updateFile(konsumen::setFotokk, fotokk);
+            updateFile(konsumen::setFotojaminan, fotojaminan);
+            updateFile(konsumen::setFotorekeninglistrik, fotorekeninglistrik);
+            updateFile(konsumen::setFotoslipgaji, fotoslipgaji);
+            updateFile(konsumen::setFotopelepasanaset, fotopelepasanaset);
 
             Konsumen createdKonsumen = konsumenService.createKonsumen(konsumen);
+            buildFileUrls(createdKonsumen);
             return new ResponseEntity<>(createdKonsumen, HttpStatus.CREATED);
         } catch (Exception e) {
+            // Log error untuk debugging
+            e.printStackTrace();
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
