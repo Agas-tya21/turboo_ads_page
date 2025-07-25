@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus; // <-- Import ObjectMapper
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart; // <-- Import IOException
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -35,31 +35,29 @@ public class ProdukController {
     @Autowired
     private StorageService storageService;
 
-    // --- PERUBAHAN UTAMA DI SINI ---
-    // Terima data produk sebagai String, bukan objek langsung
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<Produk> createProduk(
-            @RequestPart("produk") String produkJson, // Terima sebagai String
+            @RequestPart("produk") String produkJson,
             @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
-            // Konversi manual dari JSON String ke objek Produk
             Produk produk = new ObjectMapper().readValue(produkJson, Produk.class);
 
             if (file != null && !file.isEmpty()) {
+                // 1. Simpan nama file unik ke database
                 String fileName = storageService.storeFile(file);
                 produk.setGambarproduk(fileName);
             }
             Produk createdProduk = produkService.createProduk(produk);
+            // 2. Buat URL lengkap saat mengirim respons
             buildImageUrl(createdProduk);
             return new ResponseEntity<>(createdProduk, HttpStatus.CREATED);
-        } catch (IOException e) { // Tangani IOException dari ObjectMapper
+        } catch (IOException e) { 
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // Read All
     @GetMapping
     public ResponseEntity<List<Produk>> getAllProduk() {
         List<Produk> produks = produkService.getAllProduk();
@@ -67,7 +65,6 @@ public class ProdukController {
         return ResponseEntity.ok(produks);
     }
 
-    // Read by ID
     @GetMapping("/{id}")
     public ResponseEntity<Produk> getProdukById(@PathVariable String id) {
         return produkService.getProdukById(id)
@@ -78,17 +75,14 @@ public class ProdukController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // --- PERUBAHAN UTAMA DI SINI JUGA ---
     @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
     public ResponseEntity<Produk> updateProduk(
             @PathVariable String id,
-            @RequestPart("produk") String produkDetailsJson, // Terima sebagai String
+            @RequestPart("produk") String produkDetailsJson,
             @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
-            // Konversi manual dari JSON String ke objek Produk
             Produk produkDetails = new ObjectMapper().readValue(produkDetailsJson, Produk.class);
             
-            // Cek dulu apakah produk ada
             if (!produkService.getProdukById(id).isPresent()) {
                 return ResponseEntity.notFound().build();
             }
@@ -109,7 +103,6 @@ public class ProdukController {
         }
     }
 
-    // Delete
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduk(@PathVariable String id) {
         try {
@@ -120,7 +113,10 @@ public class ProdukController {
         }
     }
 
-    // Helper untuk membangun URL gambar
+    /**
+     * Metode helper untuk membangun URL gambar yang lengkap.
+     * @param produk Objek Produk yang akan dimodifikasi.
+     */
     private void buildImageUrl(Produk produk) {
         String fileName = produk.getGambarproduk();
         if (fileName != null && !fileName.isEmpty() && !fileName.startsWith("http")) {

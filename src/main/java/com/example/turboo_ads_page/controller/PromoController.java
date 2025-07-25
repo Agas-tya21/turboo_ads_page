@@ -41,10 +41,12 @@ public class PromoController {
         try {
             Promo promo = objectMapper.readValue(promoJson, Promo.class);
             if (file != null && !file.isEmpty()) {
+                // 1. Simpan nama file unik ke database
                 String fileName = storageService.storeFile(file);
                 promo.setGambarpromo(fileName);
             }
             Promo createdPromo = promoService.createPromo(promo);
+            // 2. Buat URL lengkap saat mengirim respons
             buildImageUrl(createdPromo);
             return new ResponseEntity<>(createdPromo, HttpStatus.CREATED);
         } catch (IOException e) {
@@ -55,6 +57,7 @@ public class PromoController {
     @GetMapping
     public ResponseEntity<List<Promo>> getAllPromo() {
         List<Promo> promos = promoService.getAllPromo();
+        // Buat URL lengkap untuk setiap item sebelum dikirim
         promos.forEach(this::buildImageUrl);
         return ResponseEntity.ok(promos);
     }
@@ -80,6 +83,7 @@ public class PromoController {
             }
             Promo promoDetails = objectMapper.readValue(promoDetailsJson, Promo.class);
             if (file != null && !file.isEmpty()) {
+                // Jika ada file baru, simpan nama filenya
                 String fileName = storageService.storeFile(file);
                 promoDetails.setGambarpromo(fileName);
             }
@@ -101,11 +105,17 @@ public class PromoController {
         }
     }
 
+    /**
+     * Metode helper untuk membangun URL gambar yang lengkap.
+     * Mengambil base URL dari request saat ini dan menggabungkannya dengan nama file.
+     * @param promo Objek Promo yang akan dimodifikasi.
+     */
     private void buildImageUrl(Promo promo) {
         String fileName = promo.getGambarpromo();
+        // Cek jika nama file ada dan BUKAN URL lengkap
         if (fileName != null && !fileName.isEmpty() && !fileName.startsWith("http")) {
             String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/uploads/")
+                    .path("/uploads/") // Path ini harus cocok dengan yang ada di WebConfig
                     .path(fileName)
                     .toUriString();
             promo.setGambarpromo(fileDownloadUri);

@@ -39,7 +39,7 @@ public class PromoService {
         promo.setTaglinepromo(promoDetails.getTaglinepromo());
         promo.setKeteranganpromo(promoDetails.getKeteranganpromo());
         
-        // Hanya update gambar jika ada nama file baru
+        // Hanya update gambar jika ada nama file baru yang diberikan
         if (promoDetails.getGambarpromo() != null && !promoDetails.getGambarpromo().isEmpty()) {
             promo.setGambarpromo(promoDetails.getGambarpromo());
         }
