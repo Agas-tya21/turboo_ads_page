@@ -18,6 +18,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    /**
+     * Metode ini dikomentari karena konfigurasi CORS sekarang ditangani
+     * di dalam SecurityConfig untuk integrasi yang lebih baik dengan Spring Security.
+     */
+    /*
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
@@ -26,6 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(false);
     }
+    */
 
     /**
      * Konfigurasi ini memberitahu Spring Boot untuk menyajikan file dari direktori lokal.
